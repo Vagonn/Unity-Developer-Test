@@ -240,9 +240,7 @@ namespace DynamicBox.Managers
 		}
 
 		private void SetPivot ()
-		{
-			Debug.Log ("mesh.bounds.extents = " + mesh.bounds.extents);
-			
+		{			
 			// Calculate difference in 3d position
 			Vector3 diff = Vector3.Scale (mesh.bounds.extents, new Vector3 (0, 1, 0));
 
