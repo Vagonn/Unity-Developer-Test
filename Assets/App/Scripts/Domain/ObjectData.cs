@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace DynamicBox.Domain
 {
 	[Serializable]
-	public class MeshData
+	public class ObjectData
 	{
 		public class Root
 		{
