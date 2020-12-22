@@ -2,9 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4c838067-f540-42fa-aef5-295c9aeabadf" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Back.mat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Back.mat.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Black.mat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Black.mat.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Front.mat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Front.mat.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Left.mat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Left.mat.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Right.mat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/App/Materials/Right.mat.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Unity Developer Test/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Unity Developer Test/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Unity Developer Test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Unity Developer Test/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/App/Scenes/Main.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/App/Scenes/Main.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/App/Scripts/Managers/MeshGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/App/Scripts/Managers/MeshGenerator.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,7 +29,10 @@
     <changedPaths>
       <option value="$PROJECT_DIR$/Assets/App/Scripts/MeshGenerator.cs" />
       <option value="$PROJECT_DIR$/Assets/App/Scripts/Primitive.cs" />
+      <option value="$PROJECT_DIR$/Assets/App/Scripts/SetPivot.cs" />
+      <option value="$PROJECT_DIR$/Assets/App/Scripts/Helpers/SetPivotHelper.cs" />
       <option value="$PROJECT_DIR$/Assets/App/Scripts/Managers/MeshGenerator.cs" />
+      <option value="$PROJECT_DIR$/Assets/App/Scripts/Domain/MeshData.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1m0u7xBMQQ2ZoOFCxHVZFxFTUm3" />
@@ -73,7 +87,7 @@
       <option name="presentableId" value="Default" />
       <updated>1608642669807</updated>
       <workItem from="1608642678585" duration="121000" />
-      <workItem from="1608643250021" duration="5059000" />
+      <workItem from="1608643250021" duration="11791000" />
     </task>
     <servers />
   </component>

@@ -4,88 +4,61 @@ namespace DynamicBox.Managers
 {
 	public class MeshGenerator : MonoBehaviour
 	{
-		#region old
-
-		// private Mesh mesh;
-		//
-		// private Vector3[] vertices;
-		// private int[] triangles;
-		//
-		// void Start ()
-		// {
-		// 	mesh = new Mesh ();
-		// 	mesh.name = "Generated Mesh";
-		// 	GetComponent<MeshFilter> ().mesh = mesh;
-		//
-		// 	CreateShape ();
-		// 	UpdateMesh ();
-		// }
-		//
-		// private void CreateShape ()
-		// {
-		// 	vertices = new Vector3[]
-		// 	{
-		// 		new Vector3 (0, 0, 0),
-		// 		new Vector3 (0, 0, 1),
-		// 		new Vector3 (1, 0, 0),
-		// 		new Vector3 (1, 0, 1)
-		// 	};
-		//
-		// 	triangles = new int[]
-		// 	{
-		// 		0, 1, 2,
-		// 		1, 3, 2
-		// 	};
-		// }
-		//
-		// private void UpdateMesh ()
-		// {
-		// 	mesh.Clear ();
-		//
-		// 	mesh.vertices = vertices;
-		// 	mesh.triangles = triangles;
-		//
-		// 	mesh.RecalculateNormals ();
-		// }
-
-		#endregion
-
 		[Header ("Parameters")] 
 		[SerializeField] private int width;
 		[SerializeField] private int height;
 		[SerializeField] private int depth;
-		
-		[Space]
-		[SerializeField] private Material material;
+
+		[Space] 
+		[SerializeField] private Material materialFront;
+		[SerializeField] private Material materialBack;
+		[SerializeField] private Material materialTop;
+		[SerializeField] private Material materialBottom;
+		[SerializeField] private Material materialLeft;
+		[SerializeField] private Material materialRight;
+
+		private Mesh mesh;
+		private BoxCollider boxCollider;
 
 		void Start ()
 		{
 			GameObject box = CreateBoxGameObject (width, height, depth);
+
+			SetPivot ();
 		}
 
 		private GameObject CreateBoxGameObject (float _width, float _height, float _depth)
 		{
-			Mesh mesh = CreateBoxMesh (_width, _height, _depth);
+			mesh = CreateBoxMesh (_width, _height, _depth);
 
 			GameObject boxObject = new GameObject ("Box");
 			MeshFilter meshFilter = boxObject.AddComponent<MeshFilter> ();
 			meshFilter.mesh = mesh;
 
-			BoxCollider boxCollider = boxObject.AddComponent<BoxCollider> ();
+			boxCollider = boxObject.AddComponent<BoxCollider> ();
 			boxCollider.size = new Vector3 (_width, _height, _depth);
 			boxObject.AddComponent<MeshRenderer> ();
 
-			// Shader shader = Shader.Find ("Diffuse");
-			// boxObject.GetComponent<Renderer> ().material = new Material (shader);
-			
-			boxObject.GetComponent<Renderer> ().material = material;
+			Renderer meshRenderer = boxObject.GetComponent<Renderer> ();
+			Material[] materials = new Material[6];
+
+			materials[0] = materialFront;
+			materials[1] = materialBack;
+			materials[2] = materialTop;
+			materials[3] = materialBottom;
+			materials[4] = materialLeft;
+			materials[5] = materialRight;
+
+			meshRenderer.materials = materials;
 
 			return boxObject;
 		}
 
 		private Mesh CreateBoxMesh (float _width, float _height, float _depth)
 		{
-			Mesh mesh = new Mesh {name = "BoxMesh"};
+			Mesh boxMesh = new Mesh {name = "BoxMesh"};
+
+			#region
 
 			// Because the box is centered at the origin, need to divide by two to find the + and - offsets
 			_width = _width / 2.0f;
@@ -236,18 +209,57 @@ namespace DynamicBox.Managers
 			boxVertices[35] = bottomRightBack;
 			boxNormals[35] = rightNormal;
 			boxUVs[35] = textureBottomRight;
+			
+			#endregion
 
-			mesh.vertices = boxVertices;
-			mesh.normals = boxNormals;
-			mesh.uv = boxUVs;
-			//mesh.triangles = CreateIndexBuffer(vertexCount, indexCount, slices);
-			mesh.triangles = new[]
+			boxMesh.subMeshCount = 6;
+
+			boxMesh.vertices = boxVertices;
+			boxMesh.normals = boxNormals;
+			boxMesh.uv = boxUVs;
+
+			int[][] trianglesSets = new int[6][];
+
+			trianglesSets[0] = new[] {0, 1, 2, 3, 4, 5};
+			trianglesSets[1] = new[] {6, 7, 8, 9, 10, 11};
+			trianglesSets[2] = new[] {12, 13, 14, 15, 16, 17};
+			trianglesSets[3] = new[] {18, 19, 20, 21, 22, 23};
+			trianglesSets[4] = new[] {24, 25, 26, 27, 28, 29};
+			trianglesSets[5] = new[] {30, 31, 32, 33, 34, 35};
+
+			boxMesh.SetTriangles (trianglesSets[0], 0);
+			boxMesh.SetTriangles (trianglesSets[1], 1);
+			boxMesh.SetTriangles (trianglesSets[2], 2);
+			boxMesh.SetTriangles (trianglesSets[3], 3);
+			boxMesh.SetTriangles (trianglesSets[4], 4);
+			boxMesh.SetTriangles (trianglesSets[5], 5);
+
+			boxMesh.RecalculateNormals ();
+
+			return boxMesh;
+		}
+
+		private void SetPivot ()
+		{
+			Debug.Log ("mesh.bounds.extents = " + mesh.bounds.extents);
+			
+			// Calculate difference in 3d position
+			Vector3 diff = Vector3.Scale (mesh.bounds.extents, new Vector3 (0, 1, 0));
+
+			// Move object position
+			boxCollider.transform.position -= Vector3.Scale (diff, boxCollider.transform.localScale);
+
+			// Iterate over all vertices and move them in the opposite direction of the object position movement
+			Vector3[] verts = mesh.vertices;
+			for (int i = 0; i < verts.Length; i++)
 			{
-				0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-				29, 30, 31, 32, 33, 34, 35
-			};
+				verts[i] += diff;
+			}
 
-			return mesh;
+			mesh.vertices = verts;
+			mesh.RecalculateBounds ();
+
+			boxCollider.center += diff;
 		}
 	}
 }

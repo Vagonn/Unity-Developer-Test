@@ -9,6 +9,9 @@
       <e p="Assets" t="Include">
         <e p="App" t="Include">
           <e p="Scripts" t="Include">
+            <e p="Domain" t="Include">
+              <e p="MeshData.cs" t="Include" />
+            </e>
             <e p="Managers" t="Include">
               <e p="MeshGenerator.cs" t="Include" />
             </e>
