@@ -1,64 +1,95 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace DynamicBox.Managers
+namespace DynamicBox.Helpers
 {
-	public class MeshGenerator : MonoBehaviour
+	public class CalculateBounds : MonoBehaviour
 	{
-		[Header ("Parameters")] 
-		[SerializeField] private int width;
-		[SerializeField] private int height;
-		[SerializeField] private int depth;
-
-		[Space] 
-		[SerializeField] private Material materialFront;
-		[SerializeField] private Material materialBack;
-		[SerializeField] private Material materialTop;
-		[SerializeField] private Material materialBottom;
-		[SerializeField] private Material materialLeft;
-		[SerializeField] private Material materialRight;
-
-		private Mesh mesh;
-		private BoxCollider boxCollider;
+		[Header ("Links")] [SerializeField] private GameObject boxObject;
+		[SerializeField] private Material material;
 
 		void Start ()
 		{
-			GameObject box = CreateBoxGameObject (width, height, depth);
+			Calculate ();
+		}
 
-			SetPivot ();
+		private void Calculate ()
+		{
+			Bounds bounds = GetBounds (boxObject);
+
+			// Debug.Log ("x = " + bounds.extents.x + ", y = " + bounds.extents.y + ", z = " + bounds.extents.z);
+
+			CreateBoxGameObject (bounds.extents.x * 2, bounds.extents.y * 2, bounds.extents.z * 2);
+		}
+
+		private Bounds GetBounds (GameObject objecto)
+		{
+			Bounds bounds;
+			Renderer childRenderer;
+
+			bounds = GetRendererBounds (objecto);
+
+			if (bounds.extents.x == 0)
+			{
+				bounds = new Bounds (objecto.transform.position, Vector3.zero);
+
+				foreach (Transform child in objecto.transform)
+				{
+					childRenderer = child.GetComponent<Renderer> ();
+
+					if (childRenderer)
+					{
+						bounds.Encapsulate (childRenderer.bounds);
+
+						Vector3 position = childRenderer.transform.position;
+
+						// Debug.Log (child.name + ": bounds.size = " + childRenderer.bounds.size);
+						// Debug.Log (child.name + ": bounds.extents.z = " + childRenderer.bounds.extents.z);
+						// Debug.Log (child.name + ": bounds.extents.center = " + childRenderer.bounds.center);
+					}
+					else
+					{
+						bounds.Encapsulate (GetBounds (child.gameObject));
+					}
+				}
+			}
+
+			return bounds;
+		}
+
+		private Bounds GetRendererBounds (GameObject objecto)
+		{
+			Bounds bounds = new Bounds (Vector3.zero, Vector3.zero);
+			Renderer objectRenderer = objecto.GetComponent<Renderer> ();
+			if (objectRenderer != null)
+			{
+				return objectRenderer.bounds;
+			}
+
+			return bounds;
 		}
 
 		private GameObject CreateBoxGameObject (float _width, float _height, float _depth)
 		{
-			mesh = CreateBoxMesh (_width, _height, _depth);
+			Mesh mesh = CreateBoxMesh (_width, _height, _depth);
 
-			GameObject boxObject = new GameObject ("Box");
-			MeshFilter meshFilter = boxObject.AddComponent<MeshFilter> ();
+			GameObject boxObject1 = new GameObject ("Box");
+			MeshFilter meshFilter = boxObject1.AddComponent<MeshFilter> ();
 			meshFilter.mesh = mesh;
 
-			boxCollider = boxObject.AddComponent<BoxCollider> ();
+			BoxCollider boxCollider = boxObject1.AddComponent<BoxCollider> ();
 			boxCollider.size = new Vector3 (_width, _height, _depth);
-			boxObject.AddComponent<MeshRenderer> ();
+			boxObject1.AddComponent<MeshRenderer> ();
 
-			Renderer meshRenderer = boxObject.GetComponent<Renderer> ();
-			Material[] materials = new Material[6];
+			boxObject1.GetComponent<Renderer> ().material = material;
 
-			materials[0] = materialFront;
-			materials[1] = materialBack;
-			materials[2] = materialTop;
-			materials[3] = materialBottom;
-			materials[4] = materialLeft;
-			materials[5] = materialRight;
-
-			meshRenderer.materials = materials;
-
-			return boxObject;
+			return boxObject1;
 		}
 
 		private Mesh CreateBoxMesh (float _width, float _height, float _depth)
 		{
 			Mesh boxMesh = new Mesh {name = "BoxMesh"};
 
-			#region
+			#region Calculations
 
 			// Because the box is centered at the origin, need to divide by two to find the + and - offsets
 			_width = _width / 2.0f;
@@ -209,55 +240,21 @@ namespace DynamicBox.Managers
 			boxVertices[35] = bottomRightBack;
 			boxNormals[35] = rightNormal;
 			boxUVs[35] = textureBottomRight;
-			
-			#endregion
 
-			boxMesh.subMeshCount = 6;
+			#endregion
 
 			boxMesh.vertices = boxVertices;
 			boxMesh.normals = boxNormals;
 			boxMesh.uv = boxUVs;
-
-			int[][] trianglesSets = new int[6][];
-
-			trianglesSets[0] = new[] {0, 1, 2, 3, 4, 5};
-			trianglesSets[1] = new[] {6, 7, 8, 9, 10, 11};
-			trianglesSets[2] = new[] {12, 13, 14, 15, 16, 17};
-			trianglesSets[3] = new[] {18, 19, 20, 21, 22, 23};
-			trianglesSets[4] = new[] {24, 25, 26, 27, 28, 29};
-			trianglesSets[5] = new[] {30, 31, 32, 33, 34, 35};
-
-			boxMesh.SetTriangles (trianglesSets[0], 0);
-			boxMesh.SetTriangles (trianglesSets[1], 1);
-			boxMesh.SetTriangles (trianglesSets[2], 2);
-			boxMesh.SetTriangles (trianglesSets[3], 3);
-			boxMesh.SetTriangles (trianglesSets[4], 4);
-			boxMesh.SetTriangles (trianglesSets[5], 5);
+			boxMesh.triangles = new[]
+			{
+				0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+				19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+			};
 
 			boxMesh.RecalculateNormals ();
 
 			return boxMesh;
-		}
-
-		private void SetPivot ()
-		{			
-			// Calculate difference in 3d position
-			Vector3 diff = Vector3.Scale (mesh.bounds.extents, new Vector3 (0, 1, 0));
-
-			// Move object position
-			boxCollider.transform.position -= Vector3.Scale (diff, boxCollider.transform.localScale);
-
-			// Iterate over all vertices and move them in the opposite direction of the object position movement
-			Vector3[] verts = mesh.vertices;
-			for (int i = 0; i < verts.Length; i++)
-			{
-				verts[i] += diff;
-			}
-
-			mesh.vertices = verts;
-			mesh.RecalculateBounds ();
-
-			boxCollider.center += diff;
 		}
 	}
 }
