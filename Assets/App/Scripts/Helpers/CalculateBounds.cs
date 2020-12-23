@@ -31,12 +31,12 @@ namespace DynamicBox.Helpers
 			CreateBoxGameObject (bounds.extents.x * 2, bounds.extents.y * 2, bounds.extents.z * 2);
 		}
 
-		private Bounds GetBounds (GameObject objecto)
+		private Bounds GetBounds (GameObject box)
 		{
 			Bounds bounds;
 			Renderer childRenderer;
 
-			bounds = GetRendererBounds (objecto);
+			bounds = GetRendererBounds (box);
 
 			if (bounds.extents.x == 0)
 			{
@@ -44,9 +44,9 @@ namespace DynamicBox.Helpers
 				List<float> minYList = new List<float> ();
 				List<float> minZList = new List<float> ();
 
-				bounds = new Bounds (objecto.transform.position, Vector3.zero);
+				bounds = new Bounds (box.transform.position, Vector3.zero);
 
-				foreach (Transform child in objecto.transform)
+				foreach (Transform child in box.transform)
 				{
 					childRenderer = child.GetComponent<Renderer> ();
 
@@ -73,10 +73,10 @@ namespace DynamicBox.Helpers
 			return bounds;
 		}
 
-		private Bounds GetRendererBounds (GameObject objecto)
+		private Bounds GetRendererBounds (GameObject box)
 		{
 			Bounds bounds = new Bounds (Vector3.zero, Vector3.zero);
-			Renderer objectRenderer = objecto.GetComponent<Renderer> ();
+			Renderer objectRenderer = box.GetComponent<Renderer> ();
 			if (objectRenderer != null)
 			{
 				return objectRenderer.bounds;
@@ -109,24 +109,23 @@ namespace DynamicBox.Helpers
 		{
 			mesh = CreateBoxMesh (_width, _height, _depth);
 
-			GameObject boxObject1 = new GameObject ("Box");
-			boxObject1.tag = "BoundBox";
+			GameObject boxGameObject = new GameObject ("Box") {tag = "BoundBox"};
 
-			MeshFilter meshFilter = boxObject1.AddComponent<MeshFilter> ();
+			MeshFilter meshFilter = boxGameObject.AddComponent<MeshFilter> ();
 			meshFilter.mesh = mesh;
 
-			boxCollider = boxObject1.AddComponent<BoxCollider> ();
+			boxCollider = boxGameObject.AddComponent<BoxCollider> ();
 			boxCollider.size = new Vector3 (_width, _height, _depth);
 
-			boxObject1.AddComponent<MeshRenderer> ();
+			boxGameObject.AddComponent<MeshRenderer> ();
 
-			boxObject1.GetComponent<Renderer> ().material = material;
+			boxGameObject.GetComponent<Renderer> ().material = material;
 
 			SetPivotToMin ();
 
-			boxObject1.transform.position = new Vector3 (minX, minY, minZ);
+			boxGameObject.transform.position = new Vector3 (minX, minY, minZ);
 
-			return boxObject1;
+			return boxGameObject;
 		}
 
 		private Mesh CreateBoxMesh (float _width, float _height, float _depth)
