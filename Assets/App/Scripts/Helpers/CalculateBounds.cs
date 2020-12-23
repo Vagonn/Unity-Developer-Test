@@ -1,22 +1,32 @@
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace DynamicBox.Helpers
 {
 	public class CalculateBounds : MonoBehaviour
 	{
-		[Header ("Links")] [SerializeField] private GameObject boxObject;
+		[Header ("Links")] 
+		[SerializeField] private GameObject boxObject;
 		[SerializeField] private Material material;
+
+		private float minX;
+		private float minY;
+		private float minZ;
+
+		private Mesh mesh;
+		private BoxCollider boxCollider;
 
 		void Start ()
 		{
 			Calculate ();
 		}
 
-		private void Calculate ()
+		public void Calculate ()
 		{
-			Bounds bounds = GetBounds (boxObject);
+			ClearOldBox ();
 
-			// Debug.Log ("x = " + bounds.extents.x + ", y = " + bounds.extents.y + ", z = " + bounds.extents.z);
+			Bounds bounds = GetBounds (boxObject);
 
 			CreateBoxGameObject (bounds.extents.x * 2, bounds.extents.y * 2, bounds.extents.z * 2);
 		}
@@ -30,6 +40,10 @@ namespace DynamicBox.Helpers
 
 			if (bounds.extents.x == 0)
 			{
+				List<float> minXList = new List<float> ();
+				List<float> minYList = new List<float> ();
+				List<float> minZList = new List<float> ();
+
 				bounds = new Bounds (objecto.transform.position, Vector3.zero);
 
 				foreach (Transform child in objecto.transform)
@@ -40,17 +54,20 @@ namespace DynamicBox.Helpers
 					{
 						bounds.Encapsulate (childRenderer.bounds);
 
-						Vector3 position = childRenderer.transform.position;
-
-						// Debug.Log (child.name + ": bounds.size = " + childRenderer.bounds.size);
-						// Debug.Log (child.name + ": bounds.extents.z = " + childRenderer.bounds.extents.z);
-						// Debug.Log (child.name + ": bounds.extents.center = " + childRenderer.bounds.center);
+						Vector3 min = childRenderer.bounds.min;
+						minXList.Add (min.x);
+						minYList.Add (min.y);
+						minZList.Add (min.z);
 					}
 					else
 					{
 						bounds.Encapsulate (GetBounds (child.gameObject));
 					}
 				}
+
+				minX = minXList.Min ();
+				minY = minYList.Min ();
+				minZ = minZList.Min ();
 			}
 
 			return bounds;
@@ -68,19 +85,46 @@ namespace DynamicBox.Helpers
 			return bounds;
 		}
 
+		private void SetPivotToMin ()
+		{
+			Vector3 diff = Vector3.Scale (mesh.bounds.extents, new Vector3 (1, 1, 1));
+
+			// Move object position
+			boxCollider.transform.position -= Vector3.Scale (diff, boxCollider.transform.localScale);
+
+			// Iterate over all vertices and move them in the opposite direction of the object position movement
+			Vector3[] verts = mesh.vertices;
+			for (int i = 0; i < verts.Length; i++)
+			{
+				verts[i] += diff;
+			}
+
+			mesh.vertices = verts;
+			mesh.RecalculateBounds ();
+
+			boxCollider.center += diff;
+		}
+
 		private GameObject CreateBoxGameObject (float _width, float _height, float _depth)
 		{
-			Mesh mesh = CreateBoxMesh (_width, _height, _depth);
+			mesh = CreateBoxMesh (_width, _height, _depth);
 
 			GameObject boxObject1 = new GameObject ("Box");
+			boxObject1.tag = "BoundBox";
+
 			MeshFilter meshFilter = boxObject1.AddComponent<MeshFilter> ();
 			meshFilter.mesh = mesh;
 
-			BoxCollider boxCollider = boxObject1.AddComponent<BoxCollider> ();
+			boxCollider = boxObject1.AddComponent<BoxCollider> ();
 			boxCollider.size = new Vector3 (_width, _height, _depth);
+
 			boxObject1.AddComponent<MeshRenderer> ();
 
 			boxObject1.GetComponent<Renderer> ().material = material;
+
+			SetPivotToMin ();
+
+			boxObject1.transform.position = new Vector3 (minX, minY, minZ);
 
 			return boxObject1;
 		}
@@ -255,6 +299,11 @@ namespace DynamicBox.Helpers
 			boxMesh.RecalculateNormals ();
 
 			return boxMesh;
+		}
+
+		private void ClearOldBox ()
+		{
+			Destroy (GameObject.FindWithTag ("BoundBox"));
 		}
 	}
 }

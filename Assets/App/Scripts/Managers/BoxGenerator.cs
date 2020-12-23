@@ -5,11 +5,13 @@ namespace DynamicBox.Managers
 {
 	public class BoxGenerator : MonoBehaviour
 	{
-		[Header ("Parameters")] [SerializeField] private float width;
+		[Header ("Parameters")] 
+		[SerializeField] private float width;
 		[SerializeField] private float height;
 		[SerializeField] private float depth;
 
-		[Space] [SerializeField] private Material materialFront;
+		[Space] 
+		[SerializeField] private Material materialFront;
 		[SerializeField] private Material materialBack;
 		[SerializeField] private Material materialTop;
 		[SerializeField] private Material materialBottom;
